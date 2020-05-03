@@ -1,8 +1,3 @@
-# find all looops and put them in dictionary
-
-# copy all paths of dictionary to new loops directory
-
-
 import os
 import re
 import shutil
