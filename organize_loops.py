@@ -9,7 +9,7 @@ pp = pprint.PrettyPrinter(depth=4)
 
 loops_dictionary = {}
 
-dir_path = '/Users/code/Desktop/mock_samples'
+dir_path = '/Users/dbean/_/_samples'
 # create the destination
 dest_dir_path_root = os.path.join(dir_path, '..', 'waynesamples', 'loops')
 

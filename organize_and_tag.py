@@ -78,8 +78,8 @@ def organize(dir_path, dest_dir_path, sample_type_regex, sample_tag_str):
 			if any(x in path.lower() for x in checked_loop_keywords):
 				continue
 
-			exact_match = re.search(rf"^[^a-zA-Z]*{sample_type_regex}[^a-zA-Z]*$", filename, flags=re.IGNORECASE)
-			match_in_string = re.search(rf"{sample_type_regex}", filename, flags=re.IGNORECASE)
+			exact_match = re.search(rf"^[^a-zA-Z]*({sample_type_regex})+[^a-zA-Z]*$", filename, flags=re.IGNORECASE)
+			match_in_string = re.search(rf"({sample_type_regex})+", filename, flags=re.IGNORECASE)
 
 			if exact_match:
 				print(f"Exact directory match on.. {exact_match.group(0)} <-- these should match --> {filename}\n{path}")

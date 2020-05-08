@@ -27,7 +27,7 @@ keys_map = {
 	}
 }
 
-dir_path = '/Users/code/Desktop/mock_samples'
+dir_path = '/Users/dbean/_/_samples'
 	
 # create the destination
 dest_dir_path_root = os.path.join(dir_path, '..', 'waynesamples', 'keys')
