@@ -3,7 +3,7 @@ import shutil
 
 import organize_and_tag as organize
 
-dir_path = '/Users/code/Desktop/mock_samples'
+dir_path = '/Users/dbean/_/_samples'
 
 # example: ["REGEX", "TAG", "Destination Path"]
 oneshot_types = [
@@ -21,9 +21,9 @@ oneshot_types = [
 	["tamb?", "ttam", "ttam"],
 	["shaker'?('?[sz])", "sshaker", "sshakers"],
 	["rim(shots)?('?[sz])?", "rrim", "rrim"],
-	["(shout('?[sz])?)|(chant('?[sz])?)|(phrase('?[sz]))?", "sshouts", "sshouts"],
+	["(shout('?[sz])?)|(chant('?[sz])?)|(phrase('?[sz])?)", "sshouts", "sshouts"],
 	["vox", "vvox", "vvox"],
-	["(roll(zs)?)|(fill'?('?[sz])?)"],
+	["(roll(zs)?)|(fill'?('?[sz])?)", "ffills", "ffills"],
 	["string('?[sz])?", "sstring", "sstring"],
 	["buildup", "bbuildup", "bbuildup"],
 	["conga('?[sz])?", "cconga", "cconga"],
