@@ -9,7 +9,7 @@ pp = pprint.PrettyPrinter(depth=4)
 
 loops_dictionary = {}
 
-dir_path = '/Users/code/Desktop/mock_samples'
+dir_path = '/Users/dbean/Desktop/flowgan_splice'
 # create the destination
 dest_dir_path_root = os.path.join(dir_path, '..', 'waynesamples', 'loops')
 
@@ -19,7 +19,6 @@ except FileNotFoundError as e:
 	pass
 
 os.makedirs(dest_dir_path_root)
-max_loops_per_bpm = 75
 
 def analyze_dir(dir):
 	# do stuff
@@ -92,29 +91,44 @@ def analyze_dir(dir):
 
 
 analyze_dir(dir_path)
+if not loops_dictionary: 
+	print ("\n\nno loops found!!\n\n")
 
 organized_loops_dict = {}
 lowest_bpm = min(map(lambda x: int(x), loops_dictionary.keys())) # map(lambda x: x + x, numbers)
 highest_bpm = max(map(lambda x: int(x), loops_dictionary.keys()))
+max_loops_per_bpm = len(loops_dictionary) / 20
 
 bpm_range = range(lowest_bpm, highest_bpm)
 low_bpm_of_group = str(lowest_bpm)
 high_bpm_of_group = str(lowest_bpm)
 group_of_loops = []
+
+pp.pprint(loops_dictionary)
+
 for bpm in bpm_range:
 	bpm = str(bpm)
+	is_last_bpm_of_group = False
+	if bpm == high_bpm_of_group: is_last_bpm_of_group = True
+
+	if not bpm in loops_dictionary: continue
+
+	nxt_bpm = str(int(bpm) + 1)
+	while not nxt_bpm in loops_dictionary and not is_last_bpm_of_group:
+		nxt_bpm = str(int(nxt_bpm) + 1)
+
 	if not group_of_loops:
 		low_bpm_of_group = bpm
 		high_bpm_of_group = bpm
 
-	if not bpm in loops_dictionary:
-		continue
-
 	if low_bpm_of_group == bpm:
 		group_of_loops = loops_dictionary[low_bpm_of_group]
-		continue
 
-	if len(group_of_loops) + len(loops_dictionary[bpm]) > max_loops_per_bpm:
+	# print("bpm current: " + bpm)
+	# print("nxt_bpm: " + nxt_bpm)
+	# print(len(group_of_loops))
+
+	if len(group_of_loops) + len(loops_dictionary.get(nxt_bpm, [])) > max_loops_per_bpm:
 		name_of_group_key = f"{low_bpm_of_group}-{high_bpm_of_group}"
 		if low_bpm_of_group == high_bpm_of_group:
 			name_of_group_key = low_bpm_of_group
@@ -129,6 +143,7 @@ for bpm in bpm_range:
 	group_of_loops += loops_dictionary[bpm]
 	high_bpm_of_group = bpm
 
+# pp.pprint(organized_loops_dict)
 
 for folder, paths in organized_loops_dict.items():
 	folder_path = os.path.join(dest_dir_path_root, folder)
