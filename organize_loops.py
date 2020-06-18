@@ -3,15 +3,17 @@ import re
 import shutil
 import librosa
 
+from params import source_path, dest_dir_name
+
 import pprint
 pp = pprint.PrettyPrinter(depth=4)
 # pp.pprint(mydict)
 
 loops_dictionary = {}
 
-dir_path = '/Users/dbean/Desktop/flowgan_splice'
+dir_path = source_path
 # create the destination
-dest_dir_path_root = os.path.join(dir_path, '..', 'waynesamples', 'loops')
+dest_dir_path_root = os.path.join(dir_path, '..', dest_dir_name, 'loops')
 
 try:
 	shutil.rmtree(dest_dir_path_root)
@@ -22,6 +24,7 @@ os.makedirs(dest_dir_path_root)
 
 def analyze_dir(dir):
 	# do stuff
+	copy_these_files = True
 	for filename in os.listdir(dir):
 		path = os.path.join(dir, filename)
 		extension = os.path.splitext(filename)[1]
@@ -31,6 +34,7 @@ def analyze_dir(dir):
 			continue
 
 		if os.path.isdir(path):
+			copy_these_files = True
 			analyze_dir(path)
 			continue
 
@@ -50,13 +54,13 @@ def analyze_dir(dir):
 		if not bpm_match: continue
 
 		# some keywords to check for, if these are found in the filename ask about skipping the directory..
-		checked_keywords = ('impact', '808')
-		if any(x in filename.lower() for x in checked_keywords):
-			pp.pprint(list(filter(bpm_regex_without_bpm.search, os.listdir(dir))))
-			print(f'FILE IN QUESTION: {filename}')
-			print(f'FROM DIRECTORY: {dir}')
-			copy_these_files = input("copy these files? (y means yes)")
-			if copy_these_files != 'y': break
+		# checked_keywords = ('impact', '808')
+		# if any(x in filename.lower() for x in checked_keywords):
+		# 	pp.pprint(list(filter(bpm_regex_without_bpm.search, os.listdir(dir))))
+		# 	print(f'FILE IN QUESTION: {filename}')
+		# 	print(f'FROM DIRECTORY: {dir}')
+		# 	copy_these_files = input("copy these files? (y means yes)")
+		# 	if copy_these_files != 'y': break
 
 
 		# check if the "bpm" is included in filename
@@ -74,6 +78,17 @@ def analyze_dir(dir):
 
 			if audio_len < 4:
 				continue
+
+			word_loops_in_filename = "loops" in path.lower()
+
+			bpm = bpm_match.group(1)
+
+			pp.pprint(list(filter(bpm_regex_without_bpm.search, os.listdir(dir))))
+			print(f'FILE IN QUESTION: {filename}')
+			print(f'FROM DIRECTORY: {dir}')
+			print(f'at bpm: {bpm}')
+			if copy_these_files == True: copy_these_files = input("copy these files? (y means yes)")
+			if copy_these_files != 'y': break
 
 			bpm = bpm_match.group(1)
 			paths_at_bpm = loops_dictionary.setdefault(bpm, [])
