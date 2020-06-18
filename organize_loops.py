@@ -79,7 +79,8 @@ def analyze_dir(dir):
 			if audio_len < 4:
 				continue
 
-			word_loops_in_filename = "loops" in path.lower()
+			word_loops_in_dirname = ('loops', 'breaks', 'bpm')
+			if any(x in path.lower() for x in word_loops_in_dirname): copy_these_files = 'y'
 
 			bpm = bpm_match.group(1)
 
