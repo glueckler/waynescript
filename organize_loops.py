@@ -3,7 +3,7 @@ import re
 import shutil
 import librosa
 
-from params import source_path, dest_dir_name
+from params import source_path, dest_dir_name, let_me_pick, default_pick
 
 import pprint
 pp = pprint.PrettyPrinter(depth=4)
@@ -22,8 +22,8 @@ except FileNotFoundError as e:
 
 os.makedirs(dest_dir_path_root)
 
+dirs_to_copy_files = {}		
 def analyze_dir(dir):
-	# do stuff
 	copy_these_files = True
 	for filename in os.listdir(dir):
 		path = os.path.join(dir, filename)
@@ -34,12 +34,11 @@ def analyze_dir(dir):
 			continue
 
 		if os.path.isdir(path):
-			copy_these_files = True
 			analyze_dir(path)
 			continue
 
 		# ignore if not audio file
-		audio_extensions = ('wav', 'aiff', 'rx')
+		audio_extensions = ('wav', 'aiff', 'rx', 'mp3')
 		if not extension.endswith(audio_extensions):
 			continue
 
@@ -47,21 +46,13 @@ def analyze_dir(dir):
 		# so check for a number first
 		bpm_numeric_regex_str = "[6-9][0-9]|1[0-8][0-9]"
 		bpm_regex_without_bpm = re.compile(rf"[\s_]({bpm_numeric_regex_str})[\s_]")
-
 		bpm_match = bpm_regex_without_bpm.search(filename)
 
 		# skip if no matching bpm
 		if not bpm_match: continue
 
-		# some keywords to check for, if these are found in the filename ask about skipping the directory..
-		# checked_keywords = ('impact', '808')
-		# if any(x in filename.lower() for x in checked_keywords):
-		# 	pp.pprint(list(filter(bpm_regex_without_bpm.search, os.listdir(dir))))
-		# 	print(f'FILE IN QUESTION: {filename}')
-		# 	print(f'FROM DIRECTORY: {dir}')
-		# 	copy_these_files = input("copy these files? (y means yes)")
-		# 	if copy_these_files != 'y': break
-
+		# skip if certain words detected
+		if re.search(rf"(one[_\s]?shot|hit)", filename, flags=re.IGNORECASE): continue
 
 		# check if the "bpm" is included in filename
 		word_bpm_in_filename = "bpm" in filename.lower()
@@ -76,20 +67,24 @@ def analyze_dir(dir):
 				print(getattr(e, 'message', 'no message available for error'))
 				print(f'ERROR GETTING DURATION OF FILE: {filename}')	
 
-			if audio_len < 4:
+			if audio_len < 2:
 				continue
 
-			word_loops_in_dirname = ('loops', 'breaks', 'bpm')
+			word_loops_in_dirname = ('loops', 'loop', 'breaks', 'bpm')
 			if any(x in path.lower() for x in word_loops_in_dirname): copy_these_files = 'y'
+			if not dir in dirs_to_copy_files: dirs_to_copy_files[dir] = copy_these_files
 
 			bpm = bpm_match.group(1)
 
+			# at this point, the audio is long, but the word bpm is missing so it could be a long riser
 			pp.pprint(list(filter(bpm_regex_without_bpm.search, os.listdir(dir))))
-			print(f'FILE IN QUESTION: {filename}')
 			print(f'FROM DIRECTORY: {dir}')
+			print(f'FILE IN QUESTION: {filename}')
 			print(f'at bpm: {bpm}')
-			if copy_these_files == True: copy_these_files = input("copy these files? (y means yes)")
-			if copy_these_files != 'y': break
+			if not let_me_pick: dirs_to_copy_files[dir] = default_pick
+			if dirs_to_copy_files.get(dir, True) == True: copy_these_files = input("attempt to copy the loop files in this directory? (y means yes)")
+			dirs_to_copy_files[dir] = copy_these_files
+			if dirs_to_copy_files[dir] != 'y': break
 
 			bpm = bpm_match.group(1)
 			paths_at_bpm = loops_dictionary.setdefault(bpm, [])
@@ -113,7 +108,7 @@ if not loops_dictionary:
 organized_loops_dict = {}
 lowest_bpm = min(map(lambda x: int(x), loops_dictionary.keys())) # map(lambda x: x + x, numbers)
 highest_bpm = max(map(lambda x: int(x), loops_dictionary.keys()))
-max_loops_per_bpm = len(loops_dictionary) / 20
+max_loops_per_bpm = len(loops_dictionary) / 3
 
 bpm_range = range(lowest_bpm, highest_bpm)
 low_bpm_of_group = str(lowest_bpm)

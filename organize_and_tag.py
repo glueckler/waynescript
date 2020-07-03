@@ -2,6 +2,8 @@ import os
 import re
 import shutil
 
+from params import let_me_pick, default_pick
+
 
 # dir_path = '/Users/code/Desktop/mock_samples'
 # sample_type_regex = "kic?ks"
@@ -16,7 +18,7 @@ def organize(dir_path, dest_dir_path, sample_type_regex, sample_tag_str):
 	def analyse_sample_dir(dir, exact_match):
 		samples_to_copy = []
 		for filename in os.listdir(dir):
-			# only count the first 10
+			# only count the first few..
 			if len(samples_to_copy) > 25:
 				break
 
@@ -38,14 +40,15 @@ def organize(dir_path, dest_dir_path, sample_type_regex, sample_tag_str):
 
 			# also dive into folders to find subfolders to analyze
 			if os.path.isdir(path):
+				print(f'diving deeper in directory {path}')
 				analyse_dir(path)
 
-			audio_extensions = ('wav', 'aiff', 'rx')
+			audio_extensions = ('wav', 'aiff', 'rx', 'mp3')
 			if os.path.isfile(path) and extension.endswith(audio_extensions):
 				samples_to_copy.append(os.path.join(dir, filename))
 
 		if len(samples_to_copy) == 0:
-			print(f"no samples files found in {dir}")
+			print(f"no sample files found in {dir}")
 			return samples_to_copy
 
 		copy_these_files = 'y'
@@ -53,7 +56,8 @@ def organize(dir_path, dest_dir_path, sample_type_regex, sample_tag_str):
 			print('found these files..')
 			print('\n'.join(samples_to_copy))
 			print('---')
-			copy_these_files = input("copy these files? (y means yes)")
+			copy_these_files = default_pick
+			if let_me_pick: copy_these_files = input("copy these files? (y means yes)")
 			print('---')
 
 		if copy_these_files == 'y':
@@ -79,13 +83,17 @@ def organize(dir_path, dest_dir_path, sample_type_regex, sample_tag_str):
 				continue
 
 			exact_match = re.search(rf"^[^a-zA-Z]*({sample_type_regex})+[^a-zA-Z]*$", filename, flags=re.IGNORECASE)
+			close_match = re.search(rf"({sample_type_regex})+([\s_\-](samples|hits|shots|sounds|tools|oneshots|one[\s_\-]shots))?_?$", filename, flags=re.IGNORECASE)
 			match_in_string = re.search(rf"({sample_type_regex})+", filename, flags=re.IGNORECASE)
 
 			if exact_match:
 				print(f"Exact directory match on.. {exact_match.group(0)} <-- these should match --> {filename}\n{path}")
 				analyse_sample_dir(path, True)
+			elif close_match:
+				print(f"---\nMatching: {sample_type_regex}\nClose Match {match_in_string.group(0)} <-- in directory --> {filename}\n{path}\n---")
+				analyse_sample_dir(path, True)
 			elif match_in_string:
-				print(f"---\nMatching: {sample_type_regex}\nFound word {match_in_string.group(0)} <-- in directory --> {filename}\n{path}\n---")
+				print(f"---\nMatching: {sample_type_regex}\nMatch in String: {match_in_string.group(0)} <-- in directory --> {filename}\n{path}\n---")
 				analyse_sample_dir(path, False)
 			else:
 				analyse_dir(path)
